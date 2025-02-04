@@ -40,66 +40,66 @@ type syncCopyMove struct {
 	deleteEmptySrcDirs bool
 	dir                string
 	// internal state
-	ci                     *fs.ConfigInfo         // global config
-	fi                     *filter.Filter         // filter config
-	ctx                    context.Context        // internal context for controlling go-routines
-	cancel                 func()                 // cancel the context
-	inCtx                  context.Context        // internal context for controlling march
-	inCancel               func()                 // cancel the march context
-	noTraverse             bool                   // if set don't traverse the dst
-	noCheckDest            bool                   // if set transfer all objects regardless without checking dst
-	noUnicodeNormalization bool                   // don't normalize unicode characters in filenames
-	deletersWg             sync.WaitGroup         // for delete before go routine
-	deleteFilesCh          chan fs.Object         // channel to receive deletes if delete before
-	trackRenames           bool                   // set if we should do server-side renames
-	trackRenamesStrategy   trackRenamesStrategy   // strategies used for tracking renames
-	dstFilesMu             sync.Mutex             // protect dstFiles
-	dstFiles               map[string]fs.Object   // dst files, always filled
-	srcFiles               map[string]fs.Object   // src files, only used if deleteBefore
-	srcFilesChan           chan fs.Object         // passes src objects
-	srcFilesResult         chan error             // error result of src listing
-	dstFilesResult         chan error             // error result of dst listing
-	dstEmptyDirsMu         sync.Mutex             // protect dstEmptyDirs
-	dstEmptyDirs           map[string]fs.DirEntry // potentially empty directories
-	srcEmptyDirsMu         sync.Mutex             // protect srcEmptyDirs
-	srcEmptyDirs           map[string]fs.DirEntry // potentially empty directories
-	checkerWg              sync.WaitGroup         // wait for checkers
-	toBeChecked            *pipe                  // checkers channel
-	transfersWg            sync.WaitGroup         // wait for transfers
-	toBeUploaded           *pipe                  // copiers channel
-	errorMu                sync.Mutex             // Mutex covering the errors variables
-	err                    error                  // normal error from copy process
-	noRetryErr             error                  // error with NoRetry set
-	fatalErr               error                  // fatal error
-	commonHash             hash.Type              // common hash type between src and dst
-	modifyWindow           time.Duration          // modify window between fsrc, fdst
-	renameMapMu            sync.Mutex             // mutex to protect the below
-	renameMap              map[string][]fs.Object // dst files by hash - only used by trackRenames
-	renamerWg              sync.WaitGroup         // wait for renamers
-	toBeRenamed            *pipe                  // renamers channel
-	trackRenamesWg         sync.WaitGroup         // wg for background track renames
-	trackRenamesCh         chan fs.Object         // objects are pumped in here
-	renameCheck            []fs.Object            // accumulate files to check for rename here
-	compareCopyDest        []fs.Fs                // place to check for files to server side copy
-	backupDir              fs.Fs                  // place to store overwrites/deletes
-	checkFirst             bool                   // if set run all the checkers before starting transfers
-	maxDurationEndTime     time.Time              // end time if --max-duration is set
-	logger                 operations.LoggerFn    // LoggerFn used to report the results of a sync (or bisync) to an io.Writer
-	usingLogger            bool                   // whether we are using logger
-	setDirMetadata         bool                   // if set we set the directory metadata
-	setDirModTime          bool                   // if set we set the directory modtimes
-	setDirModTimeAfter     bool                   // if set we set the directory modtimes at the end of the sync
-	setDirModTimeMu        sync.Mutex             // protect setDirModTimeMu
-	setDirModTimes         []setDirModTime        // directories that need their modtime set
-	setDirModTimesMaxLevel int                    // max level of the directories to set
+	ci                     *fs.ConfigInfo           // global config
+	fi                     *filter.Filter           // filter config
+	ctx                    context.Context          // internal context for controlling go-routines
+	cancel                 func()                   // cancel the context
+	inCtx                  context.Context          // internal context for controlling march
+	inCancel               func()                   // cancel the march context
+	noTraverse             bool                     // if set don't traverse the dst
+	noCheckDest            bool                     // if set transfer all objects regardless without checking dst
+	noUnicodeNormalization bool                     // don't normalize unicode characters in filenames
+	deletersWg             sync.WaitGroup           // for delete before go routine
+	deleteFilesCh          chan fs.Object           // channel to receive deletes if delete before
+	trackRenames           bool                     // set if we should do server-side renames
+	trackRenamesStrategy   trackRenamesStrategy     // strategies used for tracking renames
+	dstFilesMu             sync.Mutex               // protect dstFiles
+	dstFiles               map[string]fs.Object     // dst files, always filled
+	srcFiles               map[string]fs.Object     // src files, only used if deleteBefore
+	srcFilesChan           chan fs.Object           // passes src objects
+	srcFilesResult         chan error               // error result of src listing
+	dstFilesResult         chan error               // error result of dst listing
+	dstEmptyDirsMu         sync.Mutex               // protect dstEmptyDirs
+	dstEmptyDirs           map[string]fs.DirEntry   // potentially empty directories
+	srcEmptyDirsMu         sync.Mutex               // protect srcEmptyDirs
+	srcEmptyDirs           map[string]fs.DirEntry   // potentially empty directories
+	checkerWg              sync.WaitGroup           // wait for checkers
+	toBeChecked            *pipe                    // checkers channel
+	transfersWg            sync.WaitGroup           // wait for transfers
+	toBeUploaded           *pipe                    // copiers channel
+	errorMu                sync.Mutex               // Mutex covering the errors variables
+	err                    error                    // normal error from copy process
+	noRetryErr             error                    // error with NoRetry set
+	fatalErr               error                    // fatal error
+	commonHash             hash.Type                // common hash type between src and dst
+	modifyWindow           time.Duration            // modify window between fsrc, fdst
+	renameMapMu            sync.Mutex               // mutex to protect the below
+	renameMap              map[string][]fs.Object   // dst files by hash - only used by trackRenames
+	renamerWg              sync.WaitGroup           // wait for renamers
+	toBeRenamed            *pipe                    // renamers channel
+	trackRenamesWg         sync.WaitGroup           // wg for background track renames
+	trackRenamesCh         chan fs.Object           // objects are pumped in here
+	renameCheck            []fs.Object              // accumulate files to check for rename here
+	compareCopyDest        []fs.Fs                  // place to check for files to server side copy
+	backupDir              fs.Fs                    // place to store overwrites/deletes
+	checkFirst             bool                     // if set run all the checkers before starting transfers
+	maxDurationEndTime     time.Time                // end time if --max-duration is set
+	logger                 operations.LoggerFn      // LoggerFn used to report the results of a sync (or bisync) to an io.Writer
+	usingLogger            bool                     // whether we are using logger
+	setDirMetadata         bool                     // if set we set the directory metadata
+	setDirModTime          bool                     // if set we set the directory modtimes
+	setDirModTimeAfter     bool                     // if set we set the directory modtimes at the end of the sync
+	setDirModTimeMu        sync.Mutex               // protect setDirModTimeMu
+	setDirModTimes         map[string]setDirModTime // directories that might need their modtime set
+	setDirModTimesMaxLevel int                      // max level of the directories to set
 }
 
-// For keeping track of delayed modtime sets
+// For keeping track of modtime sets
 type setDirModTime struct {
 	dst     fs.Directory
-	dir     string
-	modTime time.Time
-	level   int // the level of the directory, 0 is root
+	src     fs.Directory
+	level   int  // the level of the directory, 0 is root
+	delayed bool // true if this modtime set should be delayed
 }
 
 type trackRenamesStrategy byte
@@ -143,6 +143,7 @@ func newSyncCopyMove(ctx context.Context, fdst, fsrc fs.Fs, deleteMode fs.Delete
 		dstFilesResult:         make(chan error, 1),
 		dstEmptyDirs:           make(map[string]fs.DirEntry),
 		srcEmptyDirs:           make(map[string]fs.DirEntry),
+		setDirModTimes:         make(map[string]setDirModTime),
 		noTraverse:             ci.NoTraverse,
 		noCheckDest:            ci.NoCheckDest,
 		noUnicodeNormalization: ci.NoUnicodeNormalization,
@@ -688,7 +689,7 @@ func (s *syncCopyMove) deleteEmptyDirectories(ctx context.Context, f fs.Fs, entr
 
 // This copies the empty directories in the slice passed in and logs
 // any errors copying the directories
-func copyEmptyDirectories(ctx context.Context, f fs.Fs, entries map[string]fs.DirEntry) error {
+func (s *syncCopyMove) copyEmptyDirectories(ctx context.Context, f fs.Fs, entries map[string]fs.DirEntry) error {
 	if len(entries) == 0 {
 		return nil
 	}
@@ -697,12 +698,9 @@ func copyEmptyDirectories(ctx context.Context, f fs.Fs, entries map[string]fs.Di
 	for _, entry := range entries {
 		dir, ok := entry.(fs.Directory)
 		if ok {
-			err := operations.Mkdir(ctx, f, dir.Remote())
-			if err != nil {
-				fs.Errorf(fs.LogDirName(f, dir.Remote()), "Failed to Mkdir: %v", err)
-			} else {
-				okCount++
-			}
+			// Create the directory and make sure the Metadata/ModTime is correct
+			s.copyDirMetadata(s.ctx, s.fdst, nil, dir.Remote(), dir)
+			okCount++
 		} else {
 			fs.Errorf(f, "Not a directory: %v", entry)
 		}
@@ -728,6 +726,13 @@ func (s *syncCopyMove) srcParentDirCheck(entry fs.DirEntry) {
 	if parentDir == "." {
 		parentDir = ""
 	}
+
+	// Folder is not empty so it's safe to copy directory metadata
+	if item, exists := s.setDirModTimes[parentDir]; exists && !item.delayed {
+		fs.Debugf(parentDir, "Setting modtime on dir %s as it's not empty", parentDir)
+		s.copyDirMetadata(s.ctx, s.fdst, item.dst, parentDir, item.src)
+	}
+
 	delete(s.srcEmptyDirs, parentDir)
 }
 
@@ -973,7 +978,7 @@ func (s *syncCopyMove) run() error {
 	s.stopDeleters()
 
 	if s.copyEmptySrcDirs {
-		s.processError(copyEmptyDirectories(s.ctx, s.fdst, s.srcEmptyDirs))
+		s.copyEmptyDirectories(s.ctx, s.fdst, s.srcEmptyDirs)
 	}
 
 	// Delete files after
@@ -1079,6 +1084,27 @@ func (s *syncCopyMove) DstOnly(dst fs.DirEntry) (recurse bool) {
 	return false
 }
 
+func (s *syncCopyMove) saveDirModtime(ctx context.Context, dst fs.Directory, dir string, src fs.Directory, delayed bool) {
+	level := strings.Count(dir, "/") + 1
+	// The root directory "" is at the top level
+	if dir == "" {
+		level = 0
+	}
+	s.setDirModTimeMu.Lock()
+	// Keep track of the maximum level inserted
+	if level > s.setDirModTimesMaxLevel {
+		s.setDirModTimesMaxLevel = level
+	}
+	s.setDirModTimes[dir] = setDirModTime{
+		dst:     dst,
+		src:     src,
+		level:   level,
+		delayed: delayed,
+	}
+	fs.Debugf(nil, "Saved dir modtime info dir=%q, dst=%v, delayed=%t", dir, dst, delayed)
+	s.setDirModTimeMu.Unlock()
+}
+
 // copyDirMetadata copies the src directory modTime or Metadata to dst
 // or f if nil. If dst is nil then it uses dir as the name of the new
 // directory.
@@ -1104,24 +1130,7 @@ func (s *syncCopyMove) copyDirMetadata(ctx context.Context, f fs.Fs, dst fs.Dire
 		if newDst != nil {
 			dir = newDst.Remote()
 		}
-		level := strings.Count(dir, "/") + 1
-		// The root directory "" is at the top level
-		if dir == "" {
-			level = 0
-		}
-		s.setDirModTimeMu.Lock()
-		// Keep track of the maximum level inserted
-		if level > s.setDirModTimesMaxLevel {
-			s.setDirModTimesMaxLevel = level
-		}
-		s.setDirModTimes = append(s.setDirModTimes, setDirModTime{
-			dst:     newDst,
-			dir:     dir,
-			modTime: src.ModTime(ctx),
-			level:   level,
-		})
-		s.setDirModTimeMu.Unlock()
-		fs.Debugf(nil, "Added delayed dir = %q, newDst=%v", dir, newDst)
+		s.saveDirModtime(ctx, newDst, dir, src, true)
 	}
 	s.processError(err)
 	if err != nil {
@@ -1142,8 +1151,9 @@ func (s *syncCopyMove) setDelayedDirModTimes(ctx context.Context) error {
 	for level := s.setDirModTimesMaxLevel; level >= 0; level-- {
 		g, gCtx := errgroup.WithContext(ctx)
 		g.SetLimit(s.ci.Checkers)
-		for _, item := range s.setDirModTimes {
-			if item.level != level {
+		for ldir, item := range s.setDirModTimes {
+			dir := ldir //  Required for go < 1.22
+			if !item.delayed || item.level != level {
 				continue
 			}
 			// End early if error
@@ -1152,10 +1162,10 @@ func (s *syncCopyMove) setDelayedDirModTimes(ctx context.Context) error {
 			}
 			item := item
 			g.Go(func() error {
-				_, err := operations.SetDirModTime(gCtx, s.fdst, item.dst, item.dir, item.modTime)
+				_, err := operations.SetDirModTime(gCtx, s.fdst, item.dst, dir, item.src.ModTime(ctx))
 				if err != nil {
 					err = fs.CountError(err)
-					fs.Errorf(item.dir, "Failed to timestamp directory: %v", err)
+					fs.Errorf(dir, "Failed to timestamp directory: %v", err)
 					errCount.Add(err)
 				}
 				return nil // don't return errors, just count them
@@ -1216,8 +1226,9 @@ func (s *syncCopyMove) SrcOnly(src fs.DirEntry) (recurse bool) {
 		s.logger(s.ctx, operations.MissingOnDst, src, nil, fs.ErrorIsDir)
 		s.srcEmptyDirsMu.Unlock()
 
-		// Create the directory and make sure the Metadata/ModTime is correct
-		s.copyDirMetadata(s.ctx, s.fdst, nil, x.Remote(), x)
+		// Record intention to set dir modtime
+		s.saveDirModtime(s.ctx, nil, src.Remote(), x, false)
+
 		return true
 	default:
 		panic("Bad object in DirEntries")
